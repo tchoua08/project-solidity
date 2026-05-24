@@ -1,0 +1,16 @@
+{
+  "name": "collateralized-loan-project",
+  "version": "1.0.0",
+  "description": "Udacity collateralized loan smart contract project",
+  "scripts": {
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js --network sepolia-testnet"
+  },
+  "dependencies": {
+    "dotenv": "16.3.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "5.0.0",
+    "hardhat": "2.22.3"
+  }
+}
