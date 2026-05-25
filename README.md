@@ -43,8 +43,14 @@ ACCOUNT_PRIVATE_KEY=your_wallet_private_key
 
 ## Sepolia Etherscan
 
+Deployed contract address:
+
+```text
+0xaaa5e4f7Fa231e709E2e8acCF361492600da9c19
+```
+
 Deployment link:
 
 ```text
-Add the Sepolia Etherscan URL after deploying the contract.
+https://sepolia.etherscan.io/address/0xaaa5e4f7Fa231e709E2e8acCF361492600da9c19
 ```

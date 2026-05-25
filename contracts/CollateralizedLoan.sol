@@ -22,7 +22,7 @@ contract CollateralizedLoan {
         LoanStatus status;
     }
 
-    uint public loanCount;
+    uint public nextLoanId;
     mapping(uint => Loan) public loans;
 
     bool private locked;
@@ -47,7 +47,7 @@ contract CollateralizedLoan {
     }
 
     modifier loanExists(uint _loanId) {
-        require(_loanId > 0 && _loanId <= loanCount, "Loan does not exist");
+        require(_loanId < nextLoanId, "Loan does not exist");
         _;
     }
 
@@ -75,8 +75,7 @@ contract CollateralizedLoan {
         require(_loanAmount > 0, "Loan amount must be greater than 0");
         require(_duration > 0, "Loan duration must be greater than 0");
 
-        loanCount += 1;
-        uint loanId = loanCount;
+        uint loanId = nextLoanId;
         uint repaymentAmount = _loanAmount + _interestAmount;
         uint dueDate = block.timestamp + _duration;
 
@@ -92,6 +91,8 @@ contract CollateralizedLoan {
             fundedAt: 0,
             status: LoanStatus.Requested
         });
+
+        nextLoanId += 1;
 
         emit LoanRequested(loanId, msg.sender, msg.value, _loanAmount, _interestAmount, dueDate);
         return loanId;

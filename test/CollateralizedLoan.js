@@ -46,7 +46,7 @@ describe("CollateralizedLoan", function () {
     const context = await requestedLoanFixture();
     const { collateralizedLoan, lender, loanAmount } = context;
 
-    await collateralizedLoan.connect(lender).fundLoan(1, {
+    await collateralizedLoan.connect(lender).fundLoan(0, {
       value: loanAmount,
     });
 
@@ -60,7 +60,7 @@ describe("CollateralizedLoan", function () {
       );
 
       expect(await collateralizedLoan.getAddress()).to.properAddress;
-      expect(await collateralizedLoan.loanCount()).to.equal(0);
+      expect(await collateralizedLoan.nextLoanId()).to.equal(0);
     });
   });
 
@@ -75,9 +75,9 @@ describe("CollateralizedLoan", function () {
         duration,
       } = await loadFixture(requestedLoanFixture);
 
-      const loan = await collateralizedLoan.getLoan(1);
+      const loan = await collateralizedLoan.getLoan(0);
 
-      expect(loan.id).to.equal(1);
+      expect(loan.id).to.equal(0);
       expect(loan.borrower).to.equal(borrower.address);
       expect(loan.collateralAmount).to.equal(collateralAmount);
       expect(loan.loanAmount).to.equal(loanAmount);
@@ -85,6 +85,7 @@ describe("CollateralizedLoan", function () {
       expect(loan.repaymentAmount).to.equal(loanAmount + interestAmount);
       expect(loan.dueDate).to.be.greaterThan(duration);
       expect(loan.status).to.equal(0);
+      expect(await collateralizedLoan.nextLoanId()).to.equal(1);
     });
 
     it("Should emit a loan request event", async function () {
@@ -106,7 +107,7 @@ describe("CollateralizedLoan", function () {
       )
         .to.emit(collateralizedLoan, "LoanRequested")
         .withArgs(
-          1,
+          0,
           borrower.address,
           collateralAmount,
           loanAmount,
@@ -123,12 +124,12 @@ describe("CollateralizedLoan", function () {
       );
 
       await expect(
-        collateralizedLoan.connect(lender).fundLoan(1, { value: loanAmount })
+        collateralizedLoan.connect(lender).fundLoan(0, { value: loanAmount })
       )
         .to.emit(collateralizedLoan, "LoanFunded")
-        .withArgs(1, lender.address, loanAmount);
+        .withArgs(0, lender.address, loanAmount);
 
-      const loan = await collateralizedLoan.getLoan(1);
+      const loan = await collateralizedLoan.getLoan(0);
       expect(loan.lender).to.equal(lender.address);
       expect(loan.status).to.equal(1);
     });
@@ -141,13 +142,13 @@ describe("CollateralizedLoan", function () {
       await expect(
         collateralizedLoan
           .connect(borrower)
-          .fundLoan(1, { value: ethers.parseEther("1") })
+          .fundLoan(0, { value: ethers.parseEther("1") })
       ).to.be.revertedWith("Borrower cannot fund their own loan");
 
       await expect(
         collateralizedLoan
           .connect(lender)
-          .fundLoan(1, { value: ethers.parseEther("0.5") })
+          .fundLoan(0, { value: ethers.parseEther("0.5") })
       ).to.be.revertedWith("Incorrect loan funding amount");
     });
   });
@@ -166,13 +167,13 @@ describe("CollateralizedLoan", function () {
         lender.address
       );
 
-      const transaction = await collateralizedLoan.connect(borrower).repayLoan(1, {
+      const transaction = await collateralizedLoan.connect(borrower).repayLoan(0, {
         value: repaymentAmount,
       });
 
       await expect(transaction)
         .to.emit(collateralizedLoan, "LoanRepaid")
-        .withArgs(1, borrower.address, repaymentAmount);
+        .withArgs(0, borrower.address, repaymentAmount);
 
       const lenderBalanceAfter = await ethers.provider.getBalance(
         lender.address
@@ -185,7 +186,7 @@ describe("CollateralizedLoan", function () {
       );
       expect(contractBalance).to.equal(0);
 
-      const loan = await collateralizedLoan.getLoan(1);
+      const loan = await collateralizedLoan.getLoan(0);
       expect(loan.status).to.equal(2);
     });
 
@@ -195,13 +196,13 @@ describe("CollateralizedLoan", function () {
       );
 
       await expect(
-        collateralizedLoan.connect(otherAccount).repayLoan(1, {
+        collateralizedLoan.connect(otherAccount).repayLoan(0, {
           value: ethers.parseEther("1.1"),
         })
       ).to.be.revertedWith("Only the borrower can perform this action");
 
       await expect(
-        collateralizedLoan.connect(borrower).repayLoan(1, {
+        collateralizedLoan.connect(borrower).repayLoan(0, {
           value: ethers.parseEther("1"),
         })
       ).to.be.revertedWith("Incorrect repayment amount");
@@ -217,18 +218,18 @@ describe("CollateralizedLoan", function () {
 
       const transaction = await collateralizedLoan
         .connect(lender)
-        .claimCollateral(1);
+        .claimCollateral(0);
 
       await expect(transaction)
         .to.emit(collateralizedLoan, "CollateralClaimed")
-        .withArgs(1, lender.address, collateralAmount);
+        .withArgs(0, lender.address, collateralAmount);
 
       const contractBalance = await ethers.provider.getBalance(
         await collateralizedLoan.getAddress()
       );
       expect(contractBalance).to.equal(0);
 
-      const loan = await collateralizedLoan.getLoan(1);
+      const loan = await collateralizedLoan.getLoan(0);
       expect(loan.status).to.equal(3);
     });
 
@@ -238,7 +239,7 @@ describe("CollateralizedLoan", function () {
       );
 
       await expect(
-        collateralizedLoan.connect(lender).claimCollateral(1)
+        collateralizedLoan.connect(lender).claimCollateral(0)
       ).to.be.revertedWith("Loan is not past due");
     });
   });
